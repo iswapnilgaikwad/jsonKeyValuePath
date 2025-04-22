@@ -13,14 +13,21 @@ document.getElementById('formatButton').addEventListener('click', function() {
 function parseJson(obj, prefix = '') {
     let result = '';
     for (const key in obj) {
-        if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
-            result += parseJson(obj[key], `${prefix}${key}.`);
-        } else if (Array.isArray(obj[key])) {
-            obj[key].forEach((item, index) => {
-                result += parseJson(item, `${prefix}${key}[${index}].`);
+        const value = obj[key];
+        const fullKey = `${prefix}${key}`;
+
+        if (Array.isArray(value)) {
+            value.forEach((item, index) => {
+                if (typeof item === 'object' && item !== null) {
+                    result += parseJson(item, `${fullKey}[${index}].`);
+                } else {
+                    result += `"${fullKey}[${index}]" = ${formatValue(item)}\n`;
+                }
             });
+        } else if (typeof value === 'object' && value !== null) {
+            result += parseJson(value, `${fullKey}.`);
         } else {
-            result += `"${prefix}${key}" = ${formatValue(obj[key])}\n`;
+            result += `"${fullKey}" = ${formatValue(value)}\n`;
         }
     }
     return result;
